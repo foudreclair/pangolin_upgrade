@@ -1,0 +1,35 @@
+name: Upgrade Pangolin (Ansible)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install ansible
+
+      - name: Setup SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Add known_hosts (ssh-keyscan)
+        run: |
+          ssh-keyscan -H pangolin.cryptolab.re >> ~/.ssh/known_hosts
+
+      - name: Run Ansible
+        run: |
+          ansible-playbook -i inventory/prod.ini playbook-pangolin-upgrade.yml
