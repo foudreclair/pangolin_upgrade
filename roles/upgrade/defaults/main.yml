@@ -1,0 +1,7 @@
+gerbil_version: "1.3.0"
+pangolin_version: "ee-1.14.0"
+traefik_verison: "v3.6"
+badger_version: "v1.3.1"
+crowdsec_traefik_version: "v1.4.4"
+pangolin_compose_path: "/data/pangolin"
+pangolin_traefik_path: "/data/pangolin/config/traefik"
