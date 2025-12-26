@@ -120,5 +120,3 @@ pangolin_traefik_path: "/data/pangolin/config/traefik"
 ## 📜 Licence
 
 MIT
-# pangolin_upgrade
-
