@@ -2,5 +2,7 @@
 - hosts: "pangolin"
   become: yes
   become_method: sudo
+  vars_files:
+    - vars/main.yml
   roles:
     - pangolin_upgrade
