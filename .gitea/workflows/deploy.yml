@@ -12,10 +12,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Ansible
+      - name: Install Ansible (apt)
         run: |
-          python3 -m pip install --upgrade pip
-          pip3 install ansible
+          sudo apt-get update
+          sudo apt-get install -y ansible
+          ansible --version
 
       - name: Setup SSH key
         env:
