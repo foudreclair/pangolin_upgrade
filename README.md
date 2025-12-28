@@ -6,6 +6,9 @@ via **Docker Compose**, en appliquant une stratégie simple et assumée :
 
 ⚠️ Ce rôle implique **un court downtime**.
 
+
+👉 Pour le contexte complet, les choix techniques et le retour d’expérience :
+**https://cryptolab.re/posts/2025/pangolin/**
 ---
 
 ## 🎯 Objectifs
