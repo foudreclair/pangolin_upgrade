@@ -2,7 +2,7 @@ name: Upgrade Pangolin (Ansible)
 
 on:
   push:
-    branches: [ "test" ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
