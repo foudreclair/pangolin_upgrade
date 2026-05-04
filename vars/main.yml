@@ -1,5 +1,5 @@
 gerbil_version: "1.3.1"
-pangolin_version: "ee-1.17.0"
+pangolin_version: "ee-1.17.1"
 traefik_version: "v3.6.13"
 badger_version: "v1.4.0"
 crowdsec_traefik_version: "v1.5.1"
