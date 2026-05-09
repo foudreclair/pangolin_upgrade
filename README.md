@@ -6,9 +6,30 @@ via **Docker Compose**, en appliquant une stratégie simple et assumée :
 
 ⚠️ Ce rôle implique **un court downtime**.
 
+## Mise à jour 2026-05-09
+
+Le rôle a été mis à jour pour intégrer **CrowdSec Manager** et un site **Newt** dédié, afin d'exposer l'interface CrowdSec Manager via Pangolin et son SSO, sans publier directement le port `8080` sur Internet.
+
+Cette évolution ajoute :
+
+- CrowdSec Manager dans le template Docker Compose ;
+- Newt dans le même réseau Docker que CrowdSec Manager ;
+- l'injection de `NEWT_ID` et `NEWT_SECRET` depuis les secrets Gitea Actions ;
+- la variabilisation des versions CrowdSec et CrowdSec Manager ;
+- la suppression de l'exposition publique du port métriques CrowdSec `6060`.
+
+Le chemin attendu devient :
+
+```text
+Internet -> Pangolin -> SSO -> Newt -> crowdsec-manager:8080
+```
+
 
 👉 Pour le contexte complet, les choix techniques et le retour d’expérience :
 **https://cryptolab.re/posts/2025/pangolin/**
+
+👉 Pour la suite dédiée à CrowdSec Manager :
+**https://cryptolab.re/posts/2026/pangolin-crowdsec-manager/**
 ---
 
 ## 🎯 Objectifs
@@ -18,6 +39,7 @@ via **Docker Compose**, en appliquant une stratégie simple et assumée :
 - Re-pull les images Docker
 - Redémarrer Pangolin
 - Nettoyer les images Docker inutilisées
+- Exposer CrowdSec Manager via Pangolin SSO, sans port public dédié
 
 ---
 
@@ -27,7 +49,10 @@ via **Docker Compose**, en appliquant une stratégie simple et assumée :
 - Gerbil
 - Traefik
 - Badger
+- CrowdSec
 - CrowdSec Traefik Bouncer
+- CrowdSec Manager
+- Newt
 
 ---
 
@@ -86,10 +111,70 @@ pangolin_version: "ee-1.14.1"
 traefik_version: "v3.6.5"
 badger_version: "v1.3.1"
 crowdsec_traefik_version: "v1.4.6"
+crowdsec_version: "latest"
+crowdsec_manager_version: "latest"
+newt_enabled: true
+newt_version: "latest"
+newt_pangolin_endpoint: "{{ lookup('env', 'NEWT_PANGOLIN_ENDPOINT') }}"
+newt_id: "{{ lookup('env', 'NEWT_ID') }}"
+newt_secret: "{{ lookup('env', 'NEWT_SECRET') }}"
 
 pangolin_compose_path: "/data/pangolin"
 pangolin_traefik_path: "/data/pangolin/config/traefik"
 ```
+
+---
+
+## 🔐 Variables Gitea Actions
+
+Les secrets Newt ne doivent pas être commités dans Git.
+
+Dans Gitea, configurer une variable :
+
+```text
+NEWT_PANGOLIN_ENDPOINT=https://pangolin.example.com
+```
+
+Puis deux secrets :
+
+```text
+NEWT_ID=...
+NEWT_SECRET=...
+```
+
+Ces valeurs sont injectées dans le workflow Gitea puis lues par Ansible avec `lookup('env', ...)`.
+
+Le rôle vérifie que ces valeurs existent lorsque `newt_enabled` vaut `true`.
+
+---
+
+## 🌐 Exposition CrowdSec Manager
+
+CrowdSec Manager est exposé uniquement dans le réseau Docker :
+
+```yaml
+expose:
+  - "8080"
+```
+
+Il ne doit pas avoir de mapping public du type :
+
+```yaml
+ports:
+  - "8080:8080"
+```
+
+La ressource Pangolin doit cibler le site Newt correspondant :
+
+```text
+Node de sortie : site Newt du serveur CrowdSec Manager
+Protocole : http
+Host : crowdsec-manager
+Port : 8080
+Authentification : SSO Pangolin activé
+```
+
+Même principe pour les métriques CrowdSec : le port `6060` reste interne au réseau Docker.
 
 ---
 
