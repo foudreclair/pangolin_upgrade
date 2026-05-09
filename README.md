@@ -1,8 +1,8 @@
 # Ansible Role – Pangolin Upgrade
 
 Ce rôle Ansible permet de **mettre à jour Pangolin et son écosystème**
-via **Docker Compose**, en appliquant une stratégie simple et assumée :
-**arrêt → mise à jour → redémarrage → nettoyage**.
+via **Docker Compose**, en appliquant une stratégie simple :
+**mise à jour des fichiers → pull des images → application de la stack → nettoyage**.
 
 ⚠️ Ce rôle implique **un court downtime**.
 
@@ -13,10 +13,9 @@ via **Docker Compose**, en appliquant une stratégie simple et assumée :
 
 ## 🎯 Objectifs
 
-- Arrêter Pangolin proprement
 - Mettre à jour les fichiers de configuration (Jinja2)
 - Re-pull les images Docker
-- Redémarrer Pangolin
+- Appliquer la stack avec Docker Compose
 - Nettoyer les images Docker inutilisées
 
 ---
@@ -95,11 +94,10 @@ pangolin_traefik_path: "/data/pangolin/config/traefik"
 
 ## 🔄 Déroulement exact du rôle
 
-1. Stop Pangolin  
-2. Déploiement des templates Jinja2  
-3. Pull des images Docker  
-4. Redémarrage de Pangolin  
-5. Nettoyage des images Docker inutilisées  
+1. Déploiement des templates Jinja2  
+2. Pull des images Docker  
+3. Application de la stack avec `docker compose up -d --remove-orphans`  
+4. Nettoyage des images Docker inutilisées  
 
 ---
 
