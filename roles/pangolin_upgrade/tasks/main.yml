@@ -8,6 +8,11 @@
   when: newt_enabled | bool
   no_log: true
 
+- name: Stop pangolin
+  command: docker compose down
+  args:
+    chdir: "{{ pangolin_compose_path }}"
+
 - name: docker-compose Pangolin
   template:
     src: docker-compose.yml.j2
@@ -29,8 +34,8 @@
   args:
     chdir: "{{ pangolin_compose_path }}"
 
-- name: Apply Pangolin stack
-  command: docker compose up -d --remove-orphans
+- name: Start Pangolin
+  command: docker compose up -d
   args:
     chdir: "{{ pangolin_compose_path }}"
 
