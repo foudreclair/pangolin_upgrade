@@ -32,5 +32,9 @@ jobs:
           ssh-keyscan -H pangolin.cryptolab.re >> ~/.ssh/known_hosts
 
       - name: Run Ansible
+        env:
+          NEWT_PANGOLIN_ENDPOINT: ${{ vars.NEWT_PANGOLIN_ENDPOINT }}
+          NEWT_ID: ${{ secrets.NEWT_ID }}
+          NEWT_SECRET: ${{ secrets.NEWT_SECRET }}
         run: |
           ansible-playbook -i inventory/prod.ini playbook-pangolin-upgrade.yml

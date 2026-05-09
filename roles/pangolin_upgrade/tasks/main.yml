@@ -1,3 +1,13 @@
+- name: Validate Newt secrets
+  assert:
+    that:
+      - newt_pangolin_endpoint | length > 0
+      - newt_id | length > 0
+      - newt_secret | length > 0
+    fail_msg: "Newt is enabled, but NEWT_PANGOLIN_ENDPOINT, NEWT_ID or NEWT_SECRET is missing from the environment."
+  when: newt_enabled | bool
+  no_log: true
+
 - name: Stop pangolin
   command: docker compose down
   args:

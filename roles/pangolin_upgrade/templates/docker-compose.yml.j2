@@ -4,6 +4,17 @@ networks:
     driver: bridge
     name: pangolin
 services:
+{% if newt_enabled | bool %}
+  newt:
+    image: fosrl/newt:{{ newt_version }}
+    container_name: newt
+    restart: unless-stopped
+    environment:
+      - PANGOLIN_ENDPOINT={{ newt_pangolin_endpoint }}
+      - NEWT_ID={{ newt_id }}
+      - NEWT_SECRET={{ newt_secret }}
+{% endif %}
+
   # Your CrowdSec Manager
   crowdsec-manager:
     image: hhftechnology/crowdsec-manager:{{ crowdsec_manager_version }}
