@@ -1,8 +1,8 @@
-gerbil_version: "1.3.0"
-pangolin_version: "ee-1.14.1"
-traefik_version: "v3.6.5"
-badger_version: "v1.3.1"
-crowdsec_traefik_version: "v1.4.6"
+gerbil_version: "1.5.0"
+pangolin_version: "ee-1.21.1"
+traefik_version: "v3.7.11"
+badger_version: "v1.6.1"
+crowdsec_traefik_version: "v1.7.1"
 crowdsec_version: "latest"
 crowdsec_manager_version: "latest"
 newt_enabled: false
