@@ -86,6 +86,25 @@ Internet -> Pangolin -> SSO -> Newt -> crowdsec-manager:8080
 ansible-playbook -i inventory/prod.ini playbook-pangolin-upgrade.yml
 ```
 
+### Exécution locale sur la machine Pangolin
+
+Préparer le fichier d'environnement contenant les secrets Newt :
+
+```bash
+cp .env.example .env
+chmod 600 .env
+```
+
+Renseigner les valeurs dans `.env`, puis lancer :
+
+```bash
+./run-local.sh
+```
+
+Le script charge `.env`, vérifie les variables requises et exécute le playbook
+avec une connexion Ansible locale. Les options supplémentaires sont transmises
+à `ansible-playbook`, par exemple `./run-local.sh --check`.
+
 ---
 
 ## 🧾 Exemple de playbook
