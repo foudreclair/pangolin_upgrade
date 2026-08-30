@@ -11,7 +11,7 @@ if [[ ! -f "${env_file}" ]]; then
   exit 1
 fi
 
-# Export all variables loaded from the local environment file for Ansible lookups.
+# Export all variables loaded from the environment file for Ansible lookups.
 set -a
 # shellcheck disable=SC1090
 source "${env_file}"
@@ -41,14 +41,8 @@ if ! command -v ansible-playbook >/dev/null 2>&1; then
   exit 1
 fi
 
-ansible_args=(
-  -i 'pangolin,'
-  -c local
-  "${script_dir}/playbook-pangolin-upgrade.yml"
-)
-
-if (( EUID != 0 )) && ! sudo -n true 2>/dev/null; then
-  ansible_args+=(--ask-become-pass)
-fi
-
-exec ansible-playbook "${ansible_args[@]}" "$@"
+exec ansible-playbook \
+  -i "${script_dir}/inventory/prod.ini" \
+  --limit pangolin \
+  "${script_dir}/playbook-pangolin-upgrade.yml" \
+  "$@"
