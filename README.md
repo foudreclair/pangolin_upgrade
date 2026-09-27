@@ -127,9 +127,9 @@ transmises à `ansible-playbook`, par exemple `./run-pangolin.sh --check` ou
 Définies dans `vars/main.yml` :
 
 ```yaml
-gerbil_version: "1.5.0"
-pangolin_version: "ee-1.22.0"
-traefik_version: "v3.7.12"
+gerbil_version: "1.5.2"
+pangolin_version: "ee-1.23.0"
+traefik_version: "v3.7.13"
 badger_version: "v1.7.0"
 crowdsec_traefik_version: "v1.7.1"
 crowdsec_version: "latest"
