@@ -128,10 +128,10 @@ Définies dans `vars/main.yml` :
 
 ```yaml
 gerbil_version: "1.5.2"
-pangolin_version: "ee-1.23.0"
-traefik_version: "v3.7.13"
+pangolin_version: "ee-1.25.3"
+traefik_version: "v3.7.16"
 badger_version: "v1.7.0"
-crowdsec_traefik_version: "v1.7.1"
+crowdsec_traefik_version: "v1.8.1"
 crowdsec_version: "latest"
 crowdsec_manager_version: "latest"
 newt_enabled: true
@@ -143,6 +143,11 @@ newt_secret: "{{ lookup('env', 'NEWT_SECRET') }}"
 pangolin_compose_path: "/data/pangolin"
 pangolin_traefik_path: "/data/pangolin/config/traefik"
 ```
+
+Badger reste en `v1.7.0` : les mainteneurs signalent que la
+[`v1.8.0` échoue au contrôle d'intégrité des plugins Traefik](https://github.com/fosrl/badger/releases/tag/v1.8.0),
+ce qui désactive le plugin. Les redirections permanentes de Pangolin 1.25
+restent indisponibles avec cette version.
 
 ---
 
