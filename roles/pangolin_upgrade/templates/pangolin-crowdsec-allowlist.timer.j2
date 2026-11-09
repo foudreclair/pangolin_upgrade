@@ -1,0 +1,10 @@
+[Unit]
+Description=Periodically synchronize Pangolin site IPs with CrowdSec
+
+[Timer]
+OnCalendar={{ pangolin_crowdsec_allowlist_schedule }}
+AccuracySec=1min
+Unit=pangolin-crowdsec-allowlist.service
+
+[Install]
+WantedBy=timers.target

@@ -174,6 +174,36 @@ Le rôle vérifie que ces valeurs existent lorsque `newt_enabled` vaut `true`.
 
 ---
 
+## 🛡️ Synchronisation des IP des sites dans CrowdSec
+
+Le rôle installe `/usr/local/sbin/pangolin-crowdsec-allowlist` sur le serveur
+Pangolin. Une fois par jour, un timer systemd lit les IP publiques observées
+dans `sites.endpoint` de la base Pangolin et ajoute celles qui manquent dans
+l’allowlist CrowdSec `pangolin-whitelist`.
+
+Le script est idempotent, ignore les IP privées et ne supprime aucune ancienne
+entrée. Il ne journalise que les ajouts réellement effectués dans :
+
+```text
+/var/log/pangolin-crowdsec-allowlist.log
+```
+
+La fréquence et le nom de l’allowlist sont configurables avec :
+
+```yaml
+pangolin_crowdsec_allowlist_schedule: "daily"
+pangolin_crowdsec_allowlist_name: "pangolin-whitelist"
+```
+
+Pour déployer uniquement cette synchronisation, sans relancer la stack :
+
+```bash
+ansible-playbook -i inventory/prod.ini playbook-pangolin-upgrade.yml \
+  --tags pangolin_crowdsec_allowlist
+```
+
+---
+
 ## 🌐 Exposition CrowdSec Manager
 
 CrowdSec Manager est exposé uniquement dans le réseau Docker :

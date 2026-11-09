@@ -39,6 +39,47 @@
   args:
     chdir: "{{ pangolin_compose_path }}"
 
+- name: Configure Pangolin CrowdSec allowlist synchronization
+  when: pangolin_crowdsec_allowlist_enabled | bool
+  tags:
+    - pangolin_crowdsec_allowlist
+  block:
+    - name: Install Pangolin CrowdSec allowlist synchronization script
+      template:
+        src: pangolin-crowdsec-allowlist.py.j2
+        dest: "{{ pangolin_crowdsec_allowlist_script_path }}"
+        owner: root
+        group: root
+        mode: "0750"
+
+    - name: Install Pangolin CrowdSec allowlist systemd service
+      template:
+        src: pangolin-crowdsec-allowlist.service.j2
+        dest: /etc/systemd/system/pangolin-crowdsec-allowlist.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Install Pangolin CrowdSec allowlist systemd timer
+      template:
+        src: pangolin-crowdsec-allowlist.timer.j2
+        dest: /etc/systemd/system/pangolin-crowdsec-allowlist.timer
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Apply pending systemd unit changes
+      meta: flush_handlers
+
+    - name: Enable Pangolin CrowdSec allowlist synchronization timer
+      systemd:
+        name: pangolin-crowdsec-allowlist.timer
+        enabled: true
+        state: started
+      when: not ansible_check_mode
+
 - name: Remove unused Docker images
   command: docker image prune -af
 

@@ -12,3 +12,11 @@ newt_id: ""
 newt_secret: ""
 pangolin_compose_path: "/data/pangolin"
 pangolin_traefik_path: "/data/pangolin/config/traefik"
+
+pangolin_crowdsec_allowlist_enabled: true
+pangolin_crowdsec_allowlist_name: "pangolin-whitelist"
+pangolin_crowdsec_container_name: "crowdsec"
+pangolin_crowdsec_allowlist_database: "{{ pangolin_compose_path }}/config/db/db.sqlite"
+pangolin_crowdsec_allowlist_script_path: "/usr/local/sbin/pangolin-crowdsec-allowlist"
+pangolin_crowdsec_allowlist_log_path: "/var/log/pangolin-crowdsec-allowlist.log"
+pangolin_crowdsec_allowlist_schedule: "daily"

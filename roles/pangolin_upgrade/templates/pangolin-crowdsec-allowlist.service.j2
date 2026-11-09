@@ -1,0 +1,15 @@
+[Unit]
+Description=Synchronize Pangolin site IPs with the CrowdSec allowlist
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart={{ pangolin_crowdsec_allowlist_script_path }}
+User=root
+Group=root
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+StandardOutput=null
+StandardError=journal

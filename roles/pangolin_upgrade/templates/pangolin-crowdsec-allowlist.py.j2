@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+
+"""Add the public IPs observed for Pangolin sites to a CrowdSec allowlist."""
+
+import datetime
+import fcntl
+import ipaddress
+import json
+import os
+import sqlite3
+import subprocess
+import sys
+from urllib.parse import urlsplit
+
+
+DATABASE = {{ pangolin_crowdsec_allowlist_database | to_json }}
+ALLOWLIST = {{ pangolin_crowdsec_allowlist_name | to_json }}
+CROWDSEC_CONTAINER = {{ pangolin_crowdsec_container_name | to_json }}
+LOG_FILE = {{ pangolin_crowdsec_allowlist_log_path | to_json }}
+LOCK_FILE = "/run/lock/pangolin-crowdsec-allowlist.lock"
+
+
+def run_cscli(*arguments: str) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(
+        ["docker", "exec", CROWDSEC_CONTAINER, "cscli", "allowlists", *arguments],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        details = result.stderr.strip() or result.stdout.strip() or "unknown cscli error"
+        raise RuntimeError(f"cscli {' '.join(arguments)} failed: {details}")
+    return result
+
+
+def extract_ip(endpoint: str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | None:
+    value = endpoint.strip()
+    if not value:
+        return None
+
+    try:
+        return ipaddress.ip_address(value)
+    except ValueError:
+        pass
+
+    parsed = urlsplit(value if "://" in value else f"//{value}")
+    try:
+        return ipaddress.ip_address(parsed.hostname or "")
+    except ValueError:
+        return None
+
+
+def pangolin_site_ips() -> dict[ipaddress.IPv4Address | ipaddress.IPv6Address, set[str]]:
+    connection = sqlite3.connect(f"file:{DATABASE}?mode=ro", uri=True)
+    try:
+        rows = connection.execute(
+            """
+            SELECT name, endpoint
+            FROM sites
+            WHERE endpoint IS NOT NULL AND TRIM(endpoint) != ''
+            ORDER BY siteId
+            """
+        ).fetchall()
+    finally:
+        connection.close()
+
+    result: dict[ipaddress.IPv4Address | ipaddress.IPv6Address, set[str]] = {}
+    for site_name, endpoint in rows:
+        address = extract_ip(endpoint)
+        if address is None or not address.is_global:
+            continue
+        result.setdefault(address, set()).add(site_name)
+    return result
+
+
+def allowlist_networks() -> list[ipaddress.IPv4Network | ipaddress.IPv6Network]:
+    response = run_cscli("inspect", ALLOWLIST, "--output", "json")
+    payload = json.loads(response.stdout)
+    networks: list[ipaddress.IPv4Network | ipaddress.IPv6Network] = []
+    for item in payload.get("items", []):
+        try:
+            networks.append(ipaddress.ip_network(item["value"], strict=False))
+        except (KeyError, ValueError):
+            continue
+    return networks
+
+
+def is_allowed(
+    address: ipaddress.IPv4Address | ipaddress.IPv6Address,
+    networks: list[ipaddress.IPv4Network | ipaddress.IPv6Network],
+) -> bool:
+    return any(address.version == network.version and address in network for network in networks)
+
+
+def log_addition(address: str, site_names: list[str]) -> None:
+    timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+    line = (
+        f"{timestamp} added ip={address} allowlist={ALLOWLIST} "
+        f"sites={','.join(site_names)}"
+    )
+    with open(LOG_FILE, "a", encoding="utf-8") as log_handle:
+        log_handle.write(f"{line}\n")
+    print(line)
+
+
+def main() -> None:
+    os.makedirs(os.path.dirname(LOCK_FILE), exist_ok=True)
+    with open(LOCK_FILE, "w", encoding="utf-8") as lock_handle:
+        fcntl.flock(lock_handle, fcntl.LOCK_EX)
+
+        sites_by_ip = pangolin_site_ips()
+        networks = allowlist_networks()
+        for address in sorted(sites_by_ip, key=lambda item: (item.version, int(item))):
+            if is_allowed(address, networks):
+                continue
+
+            site_names = sorted(sites_by_ip[address])
+            comment = f"Pangolin site{'s' if len(site_names) > 1 else ''} {', '.join(site_names)}"
+            run_cscli("add", ALLOWLIST, str(address), "--comment", comment)
+            networks.append(ipaddress.ip_network(address))
+            log_addition(str(address), site_names)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as error:
+        print(f"pangolin-crowdsec-allowlist: {error}", file=sys.stderr)
+        raise SystemExit(1)
