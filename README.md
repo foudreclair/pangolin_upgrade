@@ -142,11 +142,17 @@ newt_secret: "{{ lookup('env', 'NEWT_SECRET') }}"
 
 pangolin_compose_path: "/data/pangolin"
 pangolin_traefik_path: "/data/pangolin/config/traefik"
+pangolin_geolite_url: "https://github.com/P3TERX/GeoLite.mmdb/releases/latest/download/GeoLite2-Country.mmdb"
+pangolin_geolite_path: "{{ pangolin_compose_path }}/config/GeoLite2-Country.mmdb"
 ```
 
 Badger `v1.8.0` active les redirections permanentes introduites dans Pangolin
 1.25. Le problème de contrôle d'intégrité du plugin Traefik est corrigé depuis
 le 3 novembre 2026.
+
+À chaque exécution, le rôle télécharge la dernière base GeoLite2 Country dans
+un fichier temporaire, la contrôle, puis remplace atomiquement la base utilisée
+par Pangolin. Aucune ancienne copie GeoLite2 n'est conservée.
 
 ---
 

@@ -8,6 +8,36 @@
   when: newt_enabled | bool
   no_log: true
 
+- name: Download the latest GeoLite2 Country database
+  get_url:
+    url: "{{ pangolin_geolite_url }}"
+    dest: "{{ pangolin_geolite_path }}.new"
+    owner: root
+    group: root
+    mode: "0644"
+    force: true
+    timeout: 60
+
+- name: Inspect the downloaded GeoLite2 Country database
+  stat:
+    path: "{{ pangolin_geolite_path }}.new"
+  register: pangolin_geolite_download
+
+- name: Validate the downloaded GeoLite2 Country database
+  assert:
+    that:
+      - pangolin_geolite_download.stat.isreg
+      - pangolin_geolite_download.stat.size > 1000000
+    fail_msg: "The downloaded GeoLite2 Country database is invalid."
+
+- name: Install the latest GeoLite2 Country database
+  command:
+    argv:
+      - mv
+      - --force
+      - "{{ pangolin_geolite_path }}.new"
+      - "{{ pangolin_geolite_path }}"
+
 - name: Stop pangolin
   command: docker compose down
   args:

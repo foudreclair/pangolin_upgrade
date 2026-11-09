@@ -12,6 +12,8 @@ newt_id: ""
 newt_secret: ""
 pangolin_compose_path: "/data/pangolin"
 pangolin_traefik_path: "/data/pangolin/config/traefik"
+pangolin_geolite_url: "https://github.com/P3TERX/GeoLite.mmdb/releases/latest/download/GeoLite2-Country.mmdb"
+pangolin_geolite_path: "{{ pangolin_compose_path }}/config/GeoLite2-Country.mmdb"
 
 pangolin_crowdsec_allowlist_enabled: true
 pangolin_crowdsec_allowlist_name: "pangolin-whitelist"
